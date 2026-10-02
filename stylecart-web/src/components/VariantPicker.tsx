@@ -13,41 +13,53 @@ function VariantPicker({
     onAddToCart,
     onClose,
 }: VariantPickerProps) {
+    const purchasableVariants = variants.filter(
+        (variant) => variant.isActive && variant.isInStock,
+    );
+
     return (
-        <div className= "modal-background" >
-        <section className="variant-picker" >
-            <button
-          className="close-button"
-    type = "button"
-    onClick = { onClose }
-        >
-          ×
-    </button>
-
-        < p className = "eyebrow" > Choose a variant </p>
-            < h2 > { product.name } </h2>
-
-            < div className = "variant-list" >
-            {
-                variants.map((variant) => (
-                    <button
-              className= "variant-button"
-              key = { variant.id }
-              type = "button"
-              onClick = {() => onAddToCart(variant.id)}
+        <div className="modal-background">
+            <section
+                className="variant-picker"
+                aria-label={`Choose a variant for ${product.name}`}
+            >
+                <button
+                    className="close-button"
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Close variant picker"
                 >
-                <span>
-                { variant.color } · { variant.size }
-    </span>
+                    ×
+                </button>
 
-        <strong>₹{ variant.price } </strong>
-            </button>
-          ))
-}
-</div>
-    </section>
-    </div>
-  );
+                <p className="eyebrow">Choose a variant</p>
+                <h2>{product.name}</h2>
+
+                {purchasableVariants.length === 0 ? (
+                    <p className="error-message">
+                        This product is currently out of stock.
+                    </p>
+                ) : (
+                    <div className="variant-list">
+                        {purchasableVariants.map((variant) => (
+                            <button
+                                className="variant-button"
+                                key={variant.id}
+                                type="button"
+                                onClick={() => onAddToCart(variant.id)}
+                            >
+                                <span>
+                                    {variant.color} · {variant.size}
+                                </span>
+
+                                <strong>₹{variant.price}</strong>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </section>
+        </div>
+    );
 }
 
 export default VariantPicker;

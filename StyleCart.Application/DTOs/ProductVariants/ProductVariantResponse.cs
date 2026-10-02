@@ -15,4 +15,6 @@ public class ProductVariantResponse
     public decimal Price { get; set; }
 
     public bool IsActive { get; set; }
+
+    public bool IsInStock { get; set; }
 }

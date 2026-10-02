@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StyleCart.Application.DTOs.Products;
 using StyleCart.Application.Interfaces;
 using StyleCart.Domain.Entities;
 using StyleCart.Infrastructure.Data;
@@ -47,6 +48,38 @@ public class ProductRepository : IProductRepository
                     variant.ProductId == product.Id &&
                     variant.IsActive))
             .OrderBy(product => product.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductCatalogResponse>> GetCatalogAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Products
+            .AsNoTracking()
+            .Where(product =>
+                product.IsActive &&
+                _dbContext.ProductVariants.Any(variant =>
+                    variant.ProductId == product.Id &&
+                    variant.IsActive))
+            .OrderBy(product => product.Name)
+            .Select(product => new ProductCatalogResponse
+            {
+                Id = product.Id,
+                CategoryId = product.CategoryId,
+                Name = product.Name,
+                Description = product.Description,
+                Brand = product.Brand,
+                BasePrice = product.BasePrice,
+                IsActive = product.IsActive,
+
+                IsInStock = _dbContext.ProductVariants.Any(variant =>
+                    variant.ProductId == product.Id &&
+                    variant.IsActive &&
+                    _dbContext.Inventories.Any(inventory =>
+                        inventory.ProductVariantId == variant.Id &&
+                        inventory.QuantityInStock >
+                        inventory.ReservedQuantity))
+            })
             .ToListAsync(cancellationToken);
     }
 

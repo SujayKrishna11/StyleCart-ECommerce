@@ -33,9 +33,10 @@ public class ProductService : IProductService
 
         if (isUnfilteredRequest)
         {
-            var cachedProducts = await _cacheService.GetAsync<IReadOnlyList<ProductResponse>>(
-                ProductsCacheKey,
-                cancellationToken);
+            var cachedProducts =
+                await _cacheService.GetAsync<IReadOnlyList<ProductResponse>>(
+                    ProductsCacheKey,
+                    cancellationToken);
 
             if (cachedProducts is not null)
             {
@@ -70,6 +71,12 @@ public class ProductService : IProductService
         return products.Select(MapToResponse).ToList();
     }
 
+    public Task<IReadOnlyList<ProductCatalogResponse>> GetCatalogAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return _productRepository.GetCatalogAsync(cancellationToken);
+    }
+
     public async Task<ProductResponse?> GetByIdAsync(
         int id,
         CancellationToken cancellationToken = default)
@@ -92,7 +99,8 @@ public class ProductService : IProductService
 
         if (request.BasePrice <= 0)
         {
-            throw new InvalidOperationException("Product price must be greater than zero.");
+            throw new InvalidOperationException(
+                "Product price must be greater than zero.");
         }
 
         var category = await _categoryRepository.GetByIdAsync(
@@ -101,14 +109,16 @@ public class ProductService : IProductService
 
         if (category is null)
         {
-            throw new InvalidOperationException("Selected category does not exist.");
+            throw new InvalidOperationException(
+                "Selected category does not exist.");
         }
 
         if (await _productRepository.ExistsByNameAsync(
                 name,
                 cancellationToken: cancellationToken))
         {
-            throw new InvalidOperationException("A product with this name already exists.");
+            throw new InvalidOperationException(
+                "A product with this name already exists.");
         }
 
         var product = new Product
@@ -149,7 +159,8 @@ public class ProductService : IProductService
 
         if (request.BasePrice <= 0)
         {
-            throw new InvalidOperationException("Product price must be greater than zero.");
+            throw new InvalidOperationException(
+                "Product price must be greater than zero.");
         }
 
         var category = await _categoryRepository.GetByIdAsync(
@@ -158,7 +169,8 @@ public class ProductService : IProductService
 
         if (category is null)
         {
-            throw new InvalidOperationException("Selected category does not exist.");
+            throw new InvalidOperationException(
+                "Selected category does not exist.");
         }
 
         if (await _productRepository.ExistsByNameAsync(
@@ -166,7 +178,8 @@ public class ProductService : IProductService
                 id,
                 cancellationToken))
         {
-            throw new InvalidOperationException("A product with this name already exists.");
+            throw new InvalidOperationException(
+                "A product with this name already exists.");
         }
 
         product.CategoryId = request.CategoryId;

@@ -20,6 +20,7 @@ public class ProductVariantRepository : IProductVariantRepository
     {
         return await _dbContext.ProductVariants
             .AsNoTracking()
+            .Include(variant => variant.Inventory)
             .Where(variant => variant.ProductId == productId)
             .OrderBy(variant => variant.Color)
             .ThenBy(variant => variant.Size)
@@ -31,6 +32,7 @@ public class ProductVariantRepository : IProductVariantRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.ProductVariants
+            .Include(variant => variant.Inventory)
             .FirstOrDefaultAsync(variant => variant.Id == id, cancellationToken);
     }
 

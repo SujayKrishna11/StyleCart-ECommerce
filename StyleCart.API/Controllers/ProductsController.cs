@@ -43,6 +43,15 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("catalog")]
+    public async Task<ActionResult<IReadOnlyList<ProductCatalogResponse>>> GetCatalog(
+        CancellationToken cancellationToken)
+    {
+        var products = await _productService.GetCatalogAsync(cancellationToken);
+
+        return Ok(products);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductResponse>> GetById(
         int id,
@@ -108,7 +117,10 @@ public class ProductsController : ControllerBase
         UpdateProductRequest request,
         CancellationToken cancellationToken)
     {
-        var updated = await _productService.UpdateAsync(id, request, cancellationToken);
+        var updated = await _productService.UpdateAsync(
+            id,
+            request,
+            cancellationToken);
 
         return updated ? NoContent() : NotFound();
     }

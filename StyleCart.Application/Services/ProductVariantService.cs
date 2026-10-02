@@ -159,6 +159,10 @@ public class ProductVariantService : IProductVariantService
 
     private static ProductVariantResponse MapToResponse(ProductVariant variant)
     {
+        var isInStock = variant.Inventory is not null &&
+                        variant.Inventory.QuantityInStock >
+                        variant.Inventory.ReservedQuantity;
+
         return new ProductVariantResponse
         {
             Id = variant.Id,
@@ -167,7 +171,8 @@ public class ProductVariantService : IProductVariantService
             Color = variant.Color,
             SKU = variant.SKU,
             Price = variant.Price,
-            IsActive = variant.IsActive
+            IsActive = variant.IsActive,
+            IsInStock = isInStock
         };
     }
 }

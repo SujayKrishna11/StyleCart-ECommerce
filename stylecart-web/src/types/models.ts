@@ -9,6 +9,15 @@ export type Product = {
     createdAt: string;
 };
 
+export type Category = {
+    id: number;
+    name: string;
+    description?: string;
+    parentCategoryId: number | null;
+    isActive: boolean;
+    createdAt: string;
+};
+
 export type ProductVariant = {
     id: number;
     productId: number;

@@ -1,4 +1,5 @@
-﻿using StyleCart.Domain.Entities;
+﻿using StyleCart.Application.DTOs.Products;
+using StyleCart.Domain.Entities;
 
 namespace StyleCart.Application.Interfaces;
 
@@ -10,6 +11,9 @@ public interface IProductRepository
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Product>> GetAvailableAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<ProductCatalogResponse>> GetCatalogAsync(
         CancellationToken cancellationToken = default);
 
     Task<Product?> GetByIdAsync(

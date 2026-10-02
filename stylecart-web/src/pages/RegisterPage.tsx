@@ -20,6 +20,12 @@ function RegisterPage({ onRegister }: RegisterPageProps) {
         const lastName = String(formData.get("lastName"));
         const email = String(formData.get("email"));
         const password = String(formData.get("password"));
+        const confirmPassword = String(formData.get("confirmPassword"));
+
+        if (password !== confirmPassword) {
+            setError("Password and Confirm Password must match.");
+            return;
+        }
 
         try {
             setError("");
@@ -63,8 +69,23 @@ function RegisterPage({ onRegister }: RegisterPageProps) {
 
             <label>
     Password
-        < input name = "password" type = "password" minLength = { 6} required />
-            </label>
+        < input
+    name = "password"
+    type = "password"
+    minLength = { 6}
+    required
+        />
+        </label>
+
+        <label>
+            Confirm password
+        < input
+    name = "confirmPassword"
+    type = "password"
+    minLength = { 6}
+    required
+        />
+        </label>
 
     { error && <p className="error-message" > { error } </p> }
 

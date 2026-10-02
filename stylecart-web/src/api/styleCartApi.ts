@@ -1,5 +1,6 @@
 import type {
     Cart,
+    Category,
     CheckoutRequest,
     LoginResponse,
     Order,
@@ -24,24 +25,74 @@ async function sendRequest<T>(
         headers.set("Authorization", `Bearer ${token}`);
     }
 
-    const response = await fetch(`${apiUrl}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    try {
+        const response = await fetch(`${apiUrl}${endpoint}`, {
+            ...options,
+            headers,
+        });
 
-    if (!response.ok) {
-        const errorMessage = await response.text();
+        if (!response.ok) {
+            throw new Error(getUserFriendlyError(endpoint, response.status));
+        }
+
+        if (response.status === 204) {
+            return undefined as T;
+        }
+
+        return response.json() as Promise<T>;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
 
         throw new Error(
-            errorMessage || `Request failed with status ${response.status}.`,
+            "Could not connect to the server. Please try again.",
         );
     }
+}
 
-    if (response.status === 204) {
-        return undefined as T;
+function getUserFriendlyError(endpoint: string, status: number) {
+    if (status === 401) {
+        return "Your session has expired. Please log in again.";
     }
 
-    return response.json() as Promise<T>;
+    if (status === 403) {
+        return "You do not have permission to perform this action.";
+    }
+
+    if (status === 404) {
+        return "The requested item could not be found.";
+    }
+
+    if (status >= 500) {
+        return "Something went wrong on the server. Please try again later.";
+    }
+
+    if (endpoint === "/Auth/login") {
+        return "Invalid email or password.";
+    }
+
+    if (endpoint === "/Auth/register") {
+        return "Could not create the account. Check your details and try again.";
+    }
+
+    if (endpoint.startsWith("/Cart")) {
+        return "Could not update your cart. Please try again.";
+    }
+
+    if (endpoint === "/Orders/checkout") {
+        return "Could not place the order. Check your cart and available stock.";
+    }
+
+    if (endpoint.startsWith("/ProductVariants")) {
+        return "Could not load the product options. Please try again.";
+    }
+
+    if (endpoint.startsWith("/Products")) {
+        return "Could not load products. Please refresh the page.";
+    }
+
+    return "Something went wrong. Please try again.";
 }
 
 export function getProducts(token?: string) {
@@ -52,6 +103,9 @@ export function getAvailableProducts() {
     return sendRequest<Product[]>("/Products/available");
 }
 
+export function getCategories() {
+    return sendRequest<Category[]>("/Categories");
+}
 export function getProductVariants(productId: number, token: string) {
     return sendRequest<ProductVariant[]>(
         `/ProductVariants?productId=${productId}`,

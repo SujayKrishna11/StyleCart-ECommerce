@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { getAvailableProducts } from "../api/styleCartApi";
+import {
+    getAvailableProducts,
+    getCategories,
+} from "../api/styleCartApi";
+
 import ProductCard from "../components/ProductCard";
-import type { Product } from "../types/models";
+
+import type {
+    Category,
+    Product,
+} from "../types/models";
 
 type ProductsPageProps = {
     onAddToCart: (product: Product) => void;
@@ -9,20 +17,34 @@ type ProductsPageProps = {
 
 function ProductsPage({ onAddToCart }: ProductsPageProps) {
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
-        loadProducts();
+        loadPageData();
     }, []);
 
-    async function loadProducts() {
+    async function loadPageData() {
         try {
             setLoading(true);
             setError("");
 
-            const productData = await getAvailableProducts();
+            const [productData, categoryData] = await Promise.all([
+                getAvailableProducts(),
+                getCategories(),
+            ]);
+
             setProducts(productData);
+
+            const activeCategories = categoryData
+                .filter((category) => category.isActive)
+                .sort((firstCategory, secondCategory) =>
+                    firstCategory.name.localeCompare(secondCategory.name),
+                );
+
+            setCategories(activeCategories);
         } catch (requestError) {
             if (requestError instanceof Error) {
                 setError(requestError.message);
@@ -34,6 +56,13 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
         }
     }
 
+    const visibleProducts = selectedCategoryId
+        ? products.filter(
+            (product) =>
+                product.categoryId === Number(selectedCategoryId),
+        )
+        : products;
+
     return (
         <section>
         <div className= "page-heading" >
@@ -42,28 +71,59 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
             < p > Browse products that are currently available to purchase.</p>
                 </div>
 
-    { loading && <p>Loading products...</p> }
+                < div className = "filter-row" >
+                    <label className="filter-label" >
+                        Category
+                        < select
+    value = { selectedCategoryId }
+    onChange = {(event) => setSelectedCategoryId(event.target.value)
+}
+          >
+    <option value="" > All categories </option>
 
-    { error && <p className="error-message" > { error } </p> }
+{
+    categories.map((category) => (
+        <option key= { category.id } value = { category.id } >
+        { category.parentCategoryId ? "— " : "" }
+                { category.name }
+        </option>
+    ))
+}
+</select>
+    </label>
 
-    {
-        !loading && !error && products.length === 0 && (
-            <p>No products are available to purchase right now.</p>
+{
+    !loading && (
+        <p className="product-count" >
+        { visibleProducts.length } product
+    { visibleProducts.length === 1 ? "" : "s" } found
+        </p>
+        )
+}
+</div>
+
+{ loading && <p>Loading products...</p> }
+
+{ error && <p className="error-message" > { error } </p> }
+
+{
+    !loading && !error && visibleProducts.length === 0 && (
+        <p>No available products were found in this category.</p>
       )
-    }
+}
 
-    <div className="product-grid" >
-    {
-        products.map((product) => (
-            <ProductCard
+<div className="product-grid" >
+{
+    visibleProducts.map((product) => (
+        <ProductCard
             key= { product.id }
             product = { product }
             onAddToCart = { onAddToCart }
-            />
+        />
         ))
-    }
-        </div>
-        </section>
+}
+    </div>
+    </section>
   );
 }
 
