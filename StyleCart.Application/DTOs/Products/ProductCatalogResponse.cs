@@ -17,4 +17,6 @@ public class ProductCatalogResponse
     public bool IsActive { get; set; }
 
     public bool IsInStock { get; set; }
+
+    public string? ImageUrl { get; set; }
 }

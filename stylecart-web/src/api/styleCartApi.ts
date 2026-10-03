@@ -1,5 +1,6 @@
 import type {
     Cart,
+    CatalogProduct,
     Category,
     CheckoutRequest,
     LoginResponse,
@@ -99,13 +100,14 @@ export function getProducts(token?: string) {
     return sendRequest<Product[]>("/Products", {}, token);
 }
 
-export function getAvailableProducts() {
-    return sendRequest<Product[]>("/Products/available");
+export function getCatalogProducts() {
+    return sendRequest<CatalogProduct[]>("/Products/catalog");
 }
 
 export function getCategories() {
     return sendRequest<Category[]>("/Categories");
 }
+
 export function getProductVariants(productId: number, token: string) {
     return sendRequest<ProductVariant[]>(
         `/ProductVariants?productId=${productId}`,

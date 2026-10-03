@@ -76,6 +76,11 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductBulkImportService,
     ExcelProductBulkImportService>();
 
+builder.Services.AddScoped<IProductImageRepository,
+    ProductImageRepository>();
+builder.Services.AddScoped<IProductImageService,
+    ProductImageService>();
+
 builder.Services.AddScoped<IProductVariantRepository,
     ProductVariantRepository>();
 builder.Services.AddScoped<IProductVariantService,

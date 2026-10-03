@@ -16,19 +16,21 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import LoginPage from "./pages/LoginPage";
 import OrdersPage from "./pages/OrdersPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
 import ProductsPage from "./pages/ProductsPage";
 import RegisterPage from "./pages/RegisterPage";
 
 import type {
     Cart,
+    CatalogProduct,
     LoginResponse,
     Order,
-    Product,
     ProductVariant,
 } from "./types/models";
 
 type Page =
     | "products"
+    | "details"
     | "login"
     | "register"
     | "cart"
@@ -45,7 +47,10 @@ function App() {
     const [cart, setCart] = useState<Cart | null>(null);
 
     const [selectedProduct, setSelectedProduct] =
-        useState<Product | null>(null);
+        useState<CatalogProduct | null>(null);
+
+    const [detailsProduct, setDetailsProduct] =
+        useState<CatalogProduct | null>(null);
 
     const [availableVariants, setAvailableVariants] = useState<
         ProductVariant[]
@@ -106,13 +111,26 @@ function App() {
         setToken("");
         setCart(null);
         setSelectedProduct(null);
+        setDetailsProduct(null);
         setAvailableVariants([]);
         setMessage("You have logged out.");
         setError("");
         setCurrentPage("products");
     }
 
-    async function handleAddToCart(product: Product) {
+    function handleViewDetails(product: CatalogProduct) {
+        setMessage("");
+        setError("");
+        setDetailsProduct(product);
+        setCurrentPage("details");
+    }
+
+    async function handleAddToCart(product: CatalogProduct) {
+        if (!product.isInStock) {
+            setError(`${product.name} is currently out of stock.`);
+            return;
+        }
+
         if (!token) {
             setMessage("Please log in before adding a product to the cart.");
             setCurrentPage("login");
@@ -125,33 +143,64 @@ function App() {
 
             const variants = await getProductVariants(product.id, token);
 
-            const activeVariants = variants.filter(
-                (variant) => variant.isActive,
+            const purchasableVariants = variants.filter(
+                (variant) => variant.isActive && variant.isInStock,
             );
 
-            if (activeVariants.length === 0) {
-                setError(`${product.name} does not have an active variant yet.`);
+            if (purchasableVariants.length === 0) {
+                setError(`${product.name} is currently out of stock.`);
                 return;
             }
 
             setSelectedProduct(product);
-            setAvailableVariants(activeVariants);
+            setAvailableVariants(purchasableVariants);
         } catch (requestError) {
             showError(requestError, "Could not load product variants.");
         }
     }
 
-    async function addSelectedVariantToCart(variantId: number) {
+    async function addVariantToCart(
+        variantId: number,
+        quantity: number,
+    ): Promise<boolean> {
+        if (!token) {
+            setMessage("Please log in before adding a product to the cart.");
+            setCurrentPage("login");
+            return false;
+        }
+
         try {
-            await addItemToCart(variantId, 1, token);
+            await addItemToCart(variantId, quantity, token);
             await loadCart();
 
-            setSelectedProduct(null);
-            setAvailableVariants([]);
-            setMessage("Product added to your cart.");
+            setMessage(
+                quantity === 1
+                    ? "Product added to your cart."
+                    : `${quantity} items added to your cart.`,
+            );
+
+            setError("");
+            return true;
         } catch (requestError) {
             showError(requestError, "Could not add this product to the cart.");
+            return false;
         }
+    }
+
+    async function addSelectedVariantToCart(variantId: number) {
+        const added = await addVariantToCart(variantId, 1);
+
+        if (added) {
+            setSelectedProduct(null);
+            setAvailableVariants([]);
+        }
+    }
+
+    async function addDetailVariantToCart(
+        variantId: number,
+        quantity: number,
+    ) {
+        await addVariantToCart(variantId, quantity);
     }
 
     async function increaseQuantity(cartItemId: number, quantity: number) {
@@ -220,7 +269,7 @@ function App() {
     return (
         <div className= "app" >
         <Header
-        currentPage={ currentPage }
+                currentPage={ currentPage }
     isLoggedIn = { Boolean(token) }
     cartItemCount = { cartItemCount }
     onNavigate = { navigateTo }
@@ -228,68 +277,89 @@ function App() {
         />
 
         <main className="main-content" >
-        { message && <p className="success-message" > { message } </p>
+        { message && (
+                <p className="success-message" > { message } </p>
+                )
 }
-{ error && <p className="error-message" > { error } </p> }
+
+{
+    error && (
+        <p className="error-message" > { error } </p>
+                )
+}
 
 {
     currentPage === "products" && (
-        <ProductsPage onAddToCart={ handleAddToCart } />
-        )
+        <ProductsPage
+                        onAddToCart={ handleAddToCart }
+    onViewDetails = { handleViewDetails }
+        />
+                )
 }
+
+{
+    currentPage === "details" && detailsProduct && (
+        <ProductDetailsPage
+                        product={ detailsProduct }
+    token = { token }
+    onBack = {() => navigateTo("products")
+}
+onAddToCart = { addDetailVariantToCart }
+    />
+                )}
 
 {
     currentPage === "login" && (
         <LoginPage onLogin={ handleLogin } />
-        )
+                )
 }
 
 {
     currentPage === "register" && (
         <RegisterPage onRegister={ handleLogin } />
-        )
+                )
 }
 
 {
     currentPage === "cart" && (
         <CartPage
-            cart={ cart }
+                        cart={ cart }
     onIncreaseQuantity = { increaseQuantity }
     onDecreaseQuantity = { decreaseQuantity }
     onRemoveItem = { deleteCartItem }
     onCheckout = { goToCheckout }
         />
-        )
+                )
 }
 
 {
     currentPage === "checkout" && (
         <CheckoutPage
-            token={ token }
+                        token={ token }
     onOrderPlaced = { handleOrderPlaced }
         />
-        )
+                )
 }
 
 {
     currentPage === "orders" && (
         <OrdersPage token={ token } />
-        )
+                )
 }
 </main>
 
 {
     selectedProduct && (
         <VariantPicker
-          product={ selectedProduct }
+                    product={ selectedProduct }
     variants = { availableVariants }
     onAddToCart = { addSelectedVariantToCart }
     onClose = { closeVariantPicker }
         />
-      )
+            )
 }
 </div>
-  );
+    );
 }
 
 export default App;

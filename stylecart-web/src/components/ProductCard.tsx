@@ -1,37 +1,79 @@
-import type { Product } from "../types/models";
+import type { CatalogProduct } from "../types/models";
 
 type ProductCardProps = {
-    product: Product;
-    onAddToCart: (product: Product) => void;
+    product: CatalogProduct;
+    onAddToCart: (product: CatalogProduct) => void;
+    onViewDetails: (product: CatalogProduct) => void;
 };
 
-function ProductCard({ product, onAddToCart }: ProductCardProps) {
+function ProductCard({
+    product,
+    onAddToCart,
+    onViewDetails,
+}: ProductCardProps) {
     return (
         <article className= "product-card" >
-        <div className="product-placeholder" >
-        { product.brand || "StyleCart" }
+        {
+            product.imageUrl ? (
+                <img
+                    className= "product-image"
+                    src={ product.imageUrl }
+                    alt={ product.name }
+            />
+            ) : (
+                <div className="product-placeholder" >
+                { product.brand || "StyleCart" }
             </div>
+            )
+}
 
-            < div className = "product-details" >
-                <p className="product-brand" > { product.brand || "StyleCart" } </p>
+<div className="product-details" >
+    <div className="product-card-top" >
+        <p className="product-brand" >
+        { product.brand || "StyleCart" }
+            </p>
 
-                    < h2 > { product.name } </h2>
+{
+    !product.isInStock && (
+        <span className="stock-badge" > Out of stock </span>
+                    )
+}
+</div>
 
-                    < p className = "product-description" >
-                    { product.description || "No description available." }
-                        </p>
+    < h2 > { product.name } </h2>
 
-                        < div className = "product-footer" >
-                            <strong>₹{ product.basePrice } </strong>
+    < p className = "product-description" >
+    { product.description || "No description available." }
+        </p>
 
-                                < button type = "button" onClick = {() => onAddToCart(product)
-}>
-    Add to cart
+        < div className = "product-footer" >
+            <strong>₹{ product.basePrice } </strong>
+
+                < div className = "product-card-actions" >
+                    <button
+                            className="view-details-button"
+type = "button"
+onClick = {() => onViewDetails(product)}
+                        >
+    View details
         </button>
-        </div>
-        </div>
-        </article>
-  );
+
+        < button
+type = "button"
+disabled = {!product.isInStock}
+onClick = {() => onAddToCart(product)}
+                        >
+{
+    product.isInStock
+        ? "Add to cart"
+        : "Out of stock"
+}
+    </button>
+    </div>
+    </div>
+    </div>
+    </article>
+    );
 }
 
 export default ProductCard;

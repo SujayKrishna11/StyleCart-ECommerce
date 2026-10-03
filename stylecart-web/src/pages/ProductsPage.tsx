@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 import {
-    getAvailableProducts,
+    getCatalogProducts,
     getCategories,
 } from "../api/styleCartApi";
-
 import ProductCard from "../components/ProductCard";
 
 import type {
+    CatalogProduct,
     Category,
-    Product,
 } from "../types/models";
 
 type ProductsPageProps = {
-    onAddToCart: (product: Product) => void;
+    onAddToCart: (product: CatalogProduct) => void;
+    onViewDetails: (product: CatalogProduct) => void;
 };
 
-function ProductsPage({ onAddToCart }: ProductsPageProps) {
-    const [products, setProducts] = useState<Product[]>([]);
+function ProductsPage({
+    onAddToCart,
+    onViewDetails,
+}: ProductsPageProps) {
+    const [products, setProducts] = useState<CatalogProduct[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const [loading, setLoading] = useState(true);
@@ -32,7 +35,7 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
             setError("");
 
             const [productData, categoryData] = await Promise.all([
-                getAvailableProducts(),
+                getCatalogProducts(),
                 getCategories(),
             ]);
 
@@ -68,24 +71,26 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
         <div className= "page-heading" >
         <p className="eyebrow" > Fashion store </p>
             < h1 > Products </h1>
-            < p > Browse products that are currently available to purchase.</p>
+            < p > Browse products, view details, and choose a variant.</p>
                 </div>
 
                 < div className = "filter-row" >
                     <label className="filter-label" >
                         Category
+
                         < select
     value = { selectedCategoryId }
-    onChange = {(event) => setSelectedCategoryId(event.target.value)
+    onChange = {(event) =>
+    setSelectedCategoryId(event.target.value)
 }
-          >
+                    >
     <option value="" > All categories </option>
 
 {
     categories.map((category) => (
         <option key= { category.id } value = { category.id } >
         { category.parentCategoryId ? "— " : "" }
-                { category.name }
+                                { category.name }
         </option>
     ))
 }
@@ -98,7 +103,7 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
         { visibleProducts.length } product
     { visibleProducts.length === 1 ? "" : "s" } found
         </p>
-        )
+                )
 }
 </div>
 
@@ -108,23 +113,24 @@ function ProductsPage({ onAddToCart }: ProductsPageProps) {
 
 {
     !loading && !error && visibleProducts.length === 0 && (
-        <p>No available products were found in this category.</p>
-      )
+        <p>No products were found in this category.</p>
+            )
 }
 
 <div className="product-grid" >
 {
     visibleProducts.map((product) => (
         <ProductCard
-            key= { product.id }
-            product = { product }
-            onAddToCart = { onAddToCart }
+                        key= { product.id }
+                        product = { product }
+                        onAddToCart = { onAddToCart }
+                        onViewDetails = { onViewDetails }
         />
-        ))
+                ))
 }
     </div>
     </section>
-  );
+    );
 }
 
 export default ProductsPage;

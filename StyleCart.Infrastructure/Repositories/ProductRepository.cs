@@ -52,7 +52,7 @@ public class ProductRepository : IProductRepository
     }
 
     public async Task<IReadOnlyList<ProductCatalogResponse>> GetCatalogAsync(
-        CancellationToken cancellationToken = default)
+    CancellationToken cancellationToken = default)
     {
         return await _dbContext.Products
             .AsNoTracking()
@@ -78,7 +78,14 @@ public class ProductRepository : IProductRepository
                     _dbContext.Inventories.Any(inventory =>
                         inventory.ProductVariantId == variant.Id &&
                         inventory.QuantityInStock >
-                        inventory.ReservedQuantity))
+                        inventory.ReservedQuantity)),
+
+                ImageUrl = _dbContext.ProductImages
+                    .Where(image => image.ProductId == product.Id)
+                    .OrderBy(image => image.DisplayOrder)
+                    .ThenBy(image => image.Id)
+                    .Select(image => image.ImageUrl)
+                    .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
     }

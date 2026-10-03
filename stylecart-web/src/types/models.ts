@@ -9,6 +9,11 @@ export type Product = {
     createdAt: string;
 };
 
+export type CatalogProduct = Product & {
+    isInStock: boolean;
+    imageUrl?: string;
+};
+
 export type Category = {
     id: number;
     name: string;
@@ -26,6 +31,7 @@ export type ProductVariant = {
     sku: string;
     price: number;
     isActive: boolean;
+    isInStock: boolean;
 };
 
 export type LoginResponse = {

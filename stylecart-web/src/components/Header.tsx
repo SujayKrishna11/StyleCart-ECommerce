@@ -1,5 +1,6 @@
 type Page =
     | "products"
+    | "details"
     | "login"
     | "register"
     | "cart"
@@ -24,28 +25,32 @@ function Header({
     return (
         <header className= "header" >
         <button
-        className="brand-button"
+                className="brand-button"
     type = "button"
     onClick = {() => onNavigate("products")
 }
-      >
+            >
     StyleCart
     </button>
 
     < nav className = "navigation" >
         <button
-          className={ currentPage === "products" ? "active-link" : "" }
+                    className={
+    currentPage === "products" ? "active-link" : ""
+}
 type = "button"
 onClick = {() => onNavigate("products")}
-        >
+                >
     Products
     </button>
 
     < button
-className = { currentPage === "cart" ? "active-link" : ""}
+className = {
+    currentPage === "cart" ? "active-link" : ""
+                    }
 type = "button"
 onClick = {() => onNavigate("cart")}
-        >
+                >
     Cart({ cartItemCount })
     </button>
 
@@ -53,10 +58,14 @@ onClick = {() => onNavigate("cart")}
     isLoggedIn ? (
         <>
         <button
-              className= { currentPage === "orders" ? "active-link" : ""}
+                            className= {
+            currentPage === "orders"
+            ? "active-link"
+            : ""
+                            }
 type = "button"
 onClick = {() => onNavigate("orders")}
-            >
+                        >
     My Orders
         </button>
 
@@ -64,28 +73,36 @@ onClick = {() => onNavigate("orders")}
             Logout
             </button>
             </>
-        ) : (
+                ) : (
     <>
     <button
-              className= { currentPage === "login" ? "active-link" : ""}
+                            className= {
+        currentPage === "login"
+        ? "active-link"
+        : ""
+                            }
 type = "button"
 onClick = {() => onNavigate("login")}
-            >
+                        >
     Login
     </button>
 
     < button
-className = { currentPage === "register" ? "active-link" : ""}
+className = {
+    currentPage === "register"
+    ? "active-link"
+    : ""
+                            }
 type = "button"
 onClick = {() => onNavigate("register")}
-            >
+                        >
     Register
     </button>
     </>
-        )}
+                )}
 </nav>
     </header>
-  );
+    );
 }
 
 export default Header;
